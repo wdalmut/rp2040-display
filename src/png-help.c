@@ -114,7 +114,7 @@ static void _render(FIL *file, uint16_t at_row, uint16_t at_col)
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, NULL, NULL);
     printf("PNG info: width: %d, height: %d, bit_depth: %d, color_type: %d\n", width, height, bit_depth, color_type);
     
-    png_bytep row_pointers;
+    png_bytep row_pointers = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));;
     
     int maxCol = width > LCD_1IN14.WIDTH ? LCD_1IN14.WIDTH : width;
     int maxRow = height > LCD_1IN14.HEIGHT ? LCD_1IN14.HEIGHT : height;
@@ -132,10 +132,8 @@ static void _render(FIL *file, uint16_t at_row, uint16_t at_col)
 
     png_byte channels = png_get_channels(png_ptr, info_ptr);
     printf("channels: %d\n", channels);
-
+    
     for (int i=0, row = at_row; i < maxRow; i++, row++) {
-        row_pointers = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
-
         png_read_rows(png_ptr, &row_pointers, NULL, 1);
 
         for (int j=0, col = 0; j < maxCol; col+=channels, j++) {
@@ -162,10 +160,10 @@ static void _render(FIL *file, uint16_t at_row, uint16_t at_col)
             
             LCD_1IN14_DisplayPoint(j + at_col, row, ((red>>3) << 11) | ((green>>2) << 5) | blue >> 3);
         }
-
-        png_free(png_ptr, row_pointers);
-        row_pointers = NULL;
     }
+
+    png_free(png_ptr, row_pointers);
+    row_pointers = NULL;
 
     printf("Done! Destroying read struct...\n");
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
