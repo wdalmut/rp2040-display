@@ -64,8 +64,8 @@ void render_effects(void)
     FIL fil;
     FRESULT fr;
 
-    for (int i = 0; i <= 135; i+=67) {
-        for(int j = 0; j <= 240; j+=80) {
+    for (int i = 0, row=0; row < 2; i+=67, row++) {
+        for(int j = 0, col=0; col < 3; j+=80, col++) {
             uint16_t ret = get_random_png_from_path(0, "/effects/", &fil);
             if (0 != ret) {
                 printf("get_random_png_from_path error: %d %d\n", 0, ret);
