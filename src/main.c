@@ -9,6 +9,7 @@
 
 #include "hw_config.h"
 
+#include "display.h"
 #include "png-help.h"
 #include "file-help.h"
 
@@ -51,7 +52,9 @@ void render_base_image(uint16_t pngs)
         return;
     }
     
-    display_png(&fil);
+    Png_t *png = w_png_open(&fil);
+    display_png(png);
+    w_png_close(png);
     
     fr = f_close(&fil);
     if (FR_OK != fr) {
@@ -72,7 +75,9 @@ void render_effects(void)
                 continue;
             }
             
-            display_png_at(&fil, i, j);
+            Png_t *png = w_png_open(&fil);
+            display_png_at(png, i, j);
+            w_png_close(png);
             sleep_ms(1000);
             
             fr = f_close(&fil);
