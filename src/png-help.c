@@ -30,8 +30,8 @@ void display_init(void)
 
     /* LCD Init */
     LCD_1IN14_Init(HORIZONTAL);
-    LCD_1IN14_Clear(BLACK);
-
+    display_clear(BLACK);
+    
     /* Turn backlight on */
     printf("Turning on backlight...\n");
     EPD_BL_PIN = 25;
@@ -42,6 +42,11 @@ void display_init(void)
 
     // printf("DEV_Module_Exit...\n");
     // DEV_Module_Exit();
+}
+
+void display_clear(uint16_t color)
+{
+    LCD_1IN14_Clear(color);
 }
 
 void display_png(FIL *file)
