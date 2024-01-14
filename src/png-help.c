@@ -4,6 +4,10 @@
 #include <png.h>
 #define PNG_READ_SUPPORTED
 
+typedef struct {
+    FIL *file;
+} custom_file;
+
 #include "DEV_Config.h"
 #include "LCD_1in14.h"
 #include "GUI_Paint.h"
