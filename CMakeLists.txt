@@ -18,7 +18,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/include)
 
 add_executable(${PROJECT_NAME}
     src/hw_config.c
-    src/png-help.c
+    src/display.c
     src/file-help.c
     src/main.c
 )

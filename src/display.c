@@ -11,7 +11,7 @@ typedef struct {
 #include "DEV_Config.h"
 #include "LCD_1in14.h"
 #include "GUI_Paint.h"
-#include "png-help.h"
+#include "display.h"
 
 void custom_read_data(png_structrp, png_bytep, size_t);
 

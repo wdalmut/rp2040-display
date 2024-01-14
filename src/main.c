@@ -9,7 +9,7 @@
 
 #include "hw_config.h"
 
-#include "png-help.h"
+#include "display.h"
 #include "file-help.h"
 
 #define ROSC_RANDOMBIT_OFFSET _u(0x0000001c)
