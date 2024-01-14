@@ -21,6 +21,29 @@ static void error(png_structp png_ptr, const char *message)
     printf("Error from libpng: %s\n", message);
 }
 
+void display_init(void)
+{
+    printf("Initialize display...\n");
+    if (DEV_Module_Init() != 0) {
+        return;
+    }
+
+    /* LCD Init */
+    LCD_1IN14_Init(HORIZONTAL);
+    LCD_1IN14_Clear(BLACK);
+
+    /* Turn backlight on */
+    printf("Turning on backlight...\n");
+    EPD_BL_PIN = 25;
+    DEV_GPIO_Mode(EPD_BL_PIN, GPIO_OUT);
+    DEV_Digital_Write(EPD_CS_PIN, 1);
+    DEV_Digital_Write(EPD_DC_PIN, 0);
+    DEV_Digital_Write(EPD_BL_PIN, 1);
+
+    // printf("DEV_Module_Exit...\n");
+    // DEV_Module_Exit();
+}
+
 void display_png(FIL *file)
 {
     printf("Creating read structure...\n");
@@ -68,16 +91,6 @@ void display_png(FIL *file)
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, NULL, NULL);
     printf("PNG info: width: %d, height: %d, bit_depth: %d, color_type: %d\n", width, height, bit_depth, color_type);
 
-    printf("Initialize display...\n");
-    if (DEV_Module_Init() != 0) {
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        return;
-    }
-
-    /* LCD Init */
-    LCD_1IN14_Init(HORIZONTAL);
-    LCD_1IN14_Clear(BLACK);
-
     png_bytep row_pointers;
     int col, row;
     
@@ -124,17 +137,6 @@ void display_png(FIL *file)
         png_free(png_ptr, row_pointers);
         row_pointers = NULL;
     }
-
-    /* Turn backlight on */
-    printf("Turning on backlight...\n");
-    EPD_BL_PIN = 25;
-    DEV_GPIO_Mode(EPD_BL_PIN, GPIO_OUT);
-    DEV_Digital_Write(EPD_CS_PIN, 1);
-    DEV_Digital_Write(EPD_DC_PIN, 0);
-    DEV_Digital_Write(EPD_BL_PIN, 1);
-
-    printf("DEV_Module_Exit...\n");
-    DEV_Module_Exit();
 
     printf("Done! Destroying read struct...\n");
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
