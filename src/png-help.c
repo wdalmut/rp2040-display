@@ -9,8 +9,12 @@
 #include "GUI_Paint.h"
 #include "png-help.h"
 
+void custom_read_data(png_structrp, png_bytep, size_t);
+
+static void _render(FIL *, uint16_t, uint16_t);
+static void error(png_structp, const char *);
+
 void custom_read_data(png_structrp png_ptr, png_bytep data, size_t length) {
-    printf("Custom read data...\n");
     UINT bytesRead;
     custom_file *filep = (custom_file*)png_get_io_ptr(png_ptr);
     f_read(filep->file, data, length, &bytesRead);
@@ -50,6 +54,16 @@ void display_clear(uint16_t color)
 }
 
 void display_png(FIL *file)
+{
+    _render(file, 0, 0);
+}
+
+void display_png_at(FIL *file, uint16_t row, uint16_t col)
+{
+    _render(file, row, col);
+}
+
+static void _render(FIL *file, uint16_t at_row, uint16_t at_col)
 {
     printf("Creating read structure...\n");
     png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, error, NULL);
@@ -97,10 +111,9 @@ void display_png(FIL *file)
     printf("PNG info: width: %d, height: %d, bit_depth: %d, color_type: %d\n", width, height, bit_depth, color_type);
     
     png_bytep row_pointers;
-    int col, row;
     
-    int maxCol = LCD_1IN14.WIDTH;
-    int maxRow = LCD_1IN14.HEIGHT;
+    int maxCol = width > LCD_1IN14.WIDTH ? LCD_1IN14.WIDTH : width;
+    int maxRow = height > LCD_1IN14.HEIGHT ? LCD_1IN14.HEIGHT : height;
 
     int num_palette = 0;
     png_colorp palette = NULL;
@@ -113,21 +126,22 @@ void display_png(FIL *file)
 
     printf("rowbytes: %d\n", png_get_rowbytes(png_ptr, info_ptr));
 
-    int i = 0;
     png_byte channels = png_get_channels(png_ptr, info_ptr);
     printf("channels: %d\n", channels);
 
-    for (row = 0; row < maxRow; row++) {
+    for (int i=0, row = at_row; i < maxRow; i++, row++) {
         row_pointers = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
 
         png_read_rows(png_ptr, &row_pointers, NULL, 1);
 
-        for (i=0, col = 0; i < maxCol; col+=channels, i++) {
+        for (int j=0, col = 0; j < maxCol; col+=channels, j++) {
             png_byte red, green, blue;
 
-            if (channels == 4 && (&row_pointers[col+3] + 4) == 0) {
-                printf("Pixel at (%d, %d) is transparent.\n", col, row);
-                continue;
+            if (channels == 4) {
+                png_bytep pixel = &row_pointers[col] + 3;
+                if (*pixel == 0) {
+                    continue;
+                }
             }
 
             if ((color_type == PNG_COLOR_TYPE_PALETTE) && (palette != NULL)) {
@@ -142,7 +156,7 @@ void display_png(FIL *file)
                 blue = *(pixel++);
             }
             
-            LCD_1IN14_DisplayPoint(i, row, ((red>>3) << 11) | ((green>>2) << 5) | blue >> 3);
+            LCD_1IN14_DisplayPoint(j + at_col, row, ((red>>3) << 11) | ((green>>2) << 5) | blue >> 3);
         }
 
         png_free(png_ptr, row_pointers);
