@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 //
 #include "f_util.h"
 #include "ff.h"
@@ -65,7 +66,7 @@ size_t get_random_png_from_path(uint16_t position, char *path, FIL *fil)
         // Check if the file has a ".png" extension
         if (strstr(fileInfo.fname, ".png") != NULL) {
             if (count++ == position) {
-                printf("file %s", fileInfo.fname);
+                printf("file %s\n", fileInfo.fname);
                 break;
             }
         }
@@ -80,7 +81,13 @@ size_t get_random_png_from_path(uint16_t position, char *path, FIL *fil)
         return 1;
     }
 
-    fr = f_open(fil, fileInfo.fname, FA_READ);
+    // Open the file you want to read from
+    char *filename = (char *)malloc(strlen(path) + strlen(fileInfo.fname) + 1);
+    strcpy(filename, path);
+    strcpy(filename + strlen(path), fileInfo.fname);
+    printf("filename %s\n", filename);
+
+    fr = f_open(fil, filename, FA_READ);
     if (FR_OK != fr && FR_EXIST != fr) {
         printf("f_open(%s) error: %s (%d)\n", fileInfo.fname, FRESULT_str(fr), fr);
         return 1;

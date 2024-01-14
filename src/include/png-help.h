@@ -10,4 +10,6 @@ typedef struct {
 void display_init(void);
 void display_clear(uint16_t);
 void display_png(FIL *);
+void display_png_at(FIL *, uint16_t, uint16_t);
+
 #endif
