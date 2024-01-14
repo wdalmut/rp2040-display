@@ -90,7 +90,7 @@ void display_png(FIL *file)
     int bit_depth, color_type, interlace_type;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, NULL, NULL);
     printf("PNG info: width: %d, height: %d, bit_depth: %d, color_type: %d\n", width, height, bit_depth, color_type);
-
+    
     png_bytep row_pointers;
     int col, row;
     
@@ -109,15 +109,21 @@ void display_png(FIL *file)
     printf("rowbytes: %d\n", png_get_rowbytes(png_ptr, info_ptr));
 
     int i = 0;
-    int jump = png_get_rowbytes(png_ptr, info_ptr) / LCD_1IN14.WIDTH;
+    png_byte channels = png_get_channels(png_ptr, info_ptr);
+    printf("channels: %d\n", channels);
 
     for (row = 0; row < maxRow; row++) {
         row_pointers = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
 
         png_read_rows(png_ptr, &row_pointers, NULL, 1);
 
-        for (i=0, col = 0; i < maxCol; col+=jump, i++) {
+        for (i=0, col = 0; i < maxCol; col+=channels, i++) {
             png_byte red, green, blue;
+
+            if (channels == 4 && (&row_pointers[col+3] + 4) == 0) {
+                printf("Pixel at (%d, %d) is transparent.\n", col, row);
+                continue;
+            }
 
             if ((color_type == PNG_COLOR_TYPE_PALETTE) && (palette != NULL)) {
                 red = palette[row_pointers[col]].red;
